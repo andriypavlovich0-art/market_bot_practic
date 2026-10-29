@@ -4,7 +4,8 @@ from aiogram import Router, F
 from main_kb import create_goods_keyboard
 from aiogram.types import FSInputFile, InputMediaPhoto
 import math
-
+from aiogram.fsm.context import FSMContext
+from states import OrderForm
 router_commands = Router()
 
 # ------------------------------------------------ #
@@ -32,10 +33,13 @@ goods = {"Кофемашина":
 goods_list = list(goods.items())
 # ------------------------------------------------ #
 
-per_page = 1
-max_page = math.ceil(len(goods) / per_page)
+max_page = len(goods)
 
 # ------------------------------------------------ #
+def is_valid_phone(phone: str):
+    if phone.startswith("+"):
+        phone = phone[1:]
+    return phone.isdigit() and 10 <= len(phone) <= 13
 
 def get_goods_page(page):
     name, info = goods_list[page - 1]
@@ -59,6 +63,36 @@ async def goods_page_callback(callback: CallbackQuery):
     media = InputMediaPhoto(media=FSInputFile(photo), caption=text)
     await callback.message.edit_media(media=media, reply_markup=create_goods_keyboard(page, max_page))
     await callback.answer()
+
+@router_commands.message(Command("cancel"))
+async def cancel_order(message: Message, state: FSMContext):
+    await state.clear()
+    await message.answer("Заказ отменен.")
+
+@router_commands.callback_query(F.data.startswith("order:"))
+async def order_callback(callback: CallbackQuery, state: FSMContext):
+    page = int(callback.data.split(":")[-1])
+    name, info = goods_list[page - 1]
+    await state.update_data(product=name)
+    await state.set_state(OrderForm.name)
+    await callback.message.answer("Как вас зовут?")
+    await callback.answer()
+
+@router_commands.message(OrderForm.name)
+async def get_name(message: Message, state: FSMContext):
+    await state.update_data(name=message.text)
+    await state.set_state(OrderForm.phone)
+    await message.answer("Введите номер телефона: ")
+
+@router_commands.message(OrderForm.phone)
+async def get_phone(message: Message, state: FSMContext):
+    if not message.text or not is_valid_phone(message.text):
+        await message.answer("Введите номер правильно, например +380991234567")
+        return
+    await state.update_data(phone=message.text)
+    data = await state.get_data()
+    await message.answer(f"Данние о вашем заказе:\nТовар:{data["product"]}\nИмя: {data["name"]}\nТелефон:{data["phone"]}")
+    await state.clear()
 
 @router_commands.callback_query(F.data == "ignore")
 async def ignore_callback(callback: CallbackQuery):
