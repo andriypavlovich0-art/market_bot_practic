@@ -14,30 +14,6 @@ dp.include_router(router_commands)
 bot = Bot(token=os.getenv("TOKEN"))
 # ------------------------------------------------ #
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # ------------------------------------------------ #
 async def main():
     logging.info("Бот запущен.")
