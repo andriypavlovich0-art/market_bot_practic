@@ -3,9 +3,11 @@ from aiogram.filters import Command
 from aiogram import Router, F
 from main_kb import create_goods_keyboard
 from aiogram.types import FSInputFile, InputMediaPhoto
-import math
+
 from aiogram.fsm.context import FSMContext
 from states import OrderForm
+from database import add_order
+
 router_commands = Router()
 
 # ------------------------------------------------ #
@@ -91,6 +93,7 @@ async def get_phone(message: Message, state: FSMContext):
         return
     await state.update_data(phone=message.text)
     data = await state.get_data()
+    await add_order(data["product"], data["name"], data["phone"])
     await message.answer(f"Данние о вашем заказе:\nТовар:{data["product"]}\nИмя: {data["name"]}\nТелефон:{data["phone"]}")
     await state.clear()
 

@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import asyncio
 
 from aiogram import Bot, Dispatcher
+from database import init_db
 
 from main_commands import router_commands
 # ------------------------------------------------ #
@@ -16,6 +17,7 @@ bot = Bot(token=os.getenv("TOKEN"))
 
 # ------------------------------------------------ #
 async def main():
+    await init_db()
     logging.info("Бот запущен.")
     await dp.start_polling(bot)
 
