@@ -1,3 +1,6 @@
+import os
+from dotenv import load_dotenv
+
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
 from aiogram import Router, F
@@ -12,7 +15,8 @@ router_commands = Router()
 
 # ------------------------------------------------ #
 
-
+load_dotenv()
+ADMIN_ID = int(os.getenv("ADMIN_ID"))
 
 # ------------------------------------------------ #
 def is_valid_phone(phone: str):
@@ -78,6 +82,7 @@ async def get_phone(message: Message, state: FSMContext):
     await state.update_data(phone=message.text)
     data = await state.get_data()
     await add_order(data["product"], data["name"], data["phone"])
+    await message.bot.send_message(chat_id=ADMIN_ID, text=f"Новий товар заказан!\nТовар: {data['product']}\n\nИмя заказчика: {data['name']}\nНомер телефона: {data['phone']}")
     await message.answer(f"Данние о вашем заказе:\nТовар:{data["product"]}\nИмя: {data["name"]}\nТелефон:{data["phone"]}")
     await state.clear()
 
