@@ -5,8 +5,8 @@ from dotenv import load_dotenv
 from aiogram.types import Message
 from aiogram.filters import Command
 from aiogram import Router, F
-from states import AddProduct
-from database import add_product
+from states import AddProduct, DeleteProduct
+from database import add_product, remove_product, get_product_names
 
 # ------------------------------------------------ #
 load_dotenv()
@@ -66,3 +66,25 @@ async def get_photo(message: Message, state: FSMContext):
 @admin_router.message(AddProduct.photo)
 async def answer_photo(message: Message):
     await message.answer("Пришлите именно фото.")
+
+@admin_router.message(Command("delete_product"), F.from_user.id == ADMIN_ID)
+async def delet_product_cm(message: Message, state: FSMContext):
+    await state.set_state(DeleteProduct.product_id)
+    products = await get_product_names()
+    text = "Введите номер товара для удаления:\n"
+    for good_id, name in products:
+        text += f"#{good_id} {name}\n"
+    await message.answer(text)
+
+@admin_router.message(DeleteProduct.product_id)
+async def get_delete_product(message: Message, state: FSMContext):
+    if not message.text or not message.text.isdigit():
+        await message.answer("Введите номер цифрами")
+        return
+    product_id = int(message.text)
+    deleted = await remove_product(product_id)
+    if deleted == 0:
+        await message.answer("Не удалось удалить товар, скорее всего его нет в базе данних")
+        return
+    await message.answer("🗑 Товар удалён!")
+    await state.clear()

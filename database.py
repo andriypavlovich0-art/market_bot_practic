@@ -49,3 +49,14 @@ async def get_orders():
     async with aiosqlite.connect(BD_NAME) as db:
         cursor = await db.execute("SELECT id, product, name, phone FROM orders")
         return await cursor.fetchall()
+
+async def get_product_names():
+    async with aiosqlite.connect(BD_NAME) as db:
+        cursor = await db.execute("SELECT id, name FROM products")
+        return await cursor.fetchall()
+
+async def remove_product(product_id: int):
+    async with aiosqlite.connect(BD_NAME) as db:
+        cursor = await db.execute("DELETE FROM products WHERE id = ?", (product_id,))
+        await db.commit()
+        return cursor.rowcount

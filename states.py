@@ -9,3 +9,6 @@ class AddProduct(StatesGroup):
     price = State()
     description = State()
     photo = State()
+
+class DeleteProduct(StatesGroup):
+    product_id = State()
