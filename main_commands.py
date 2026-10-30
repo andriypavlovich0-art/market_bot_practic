@@ -9,7 +9,7 @@ from aiogram.types import FSInputFile, InputMediaPhoto
 
 from aiogram.fsm.context import FSMContext
 from states import OrderForm
-from database import add_order, get_products
+from database import add_order, get_products, get_orders
 
 router_commands = Router()
 
@@ -57,6 +57,17 @@ async def goods_page_callback(callback: CallbackQuery):
 async def cancel_order(message: Message, state: FSMContext):
     await state.clear()
     await message.answer("Заказ отменен.")
+
+@router_commands.message(Command("orders"), F.from_user.id == ADMIN_ID)
+async def get_orders_cm(message: Message):
+    orders = await get_orders()
+    if not orders:
+        await message.answer("Заказов пока нет")
+        return 
+    text = "📋 Заказы:\n\n"
+    for order_id, product, name, phone in orders:
+        text += f"#{order_id} {product}\n{name}, {phone}\n\n"
+    await message.answer(text)
 
 @router_commands.callback_query(F.data.startswith("order:"))
 async def order_callback(callback: CallbackQuery, state: FSMContext):

@@ -44,3 +44,8 @@ async def update_price(price : int, product : str):
     async with aiosqlite.connect(BD_NAME) as db:
         await db.execute("UPDATE products SET price = ? WHERE name = ?", (price, product))
         await db.commit()
+    
+async def get_orders():
+    async with aiosqlite.connect(BD_NAME) as db:
+        cursor = await db.execute("SELECT id, product, name, phone FROM orders")
+        return await cursor.fetchall()
