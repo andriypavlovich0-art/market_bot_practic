@@ -7,10 +7,11 @@ from aiogram import Bot, Dispatcher
 from database import init_db
 
 from main_commands import router_commands
+from admin_cm import admin_router
 # ------------------------------------------------ #
 load_dotenv()
 dp = Dispatcher()
-dp.include_router(router_commands)
+dp.include_routers(router_commands, admin_router)
 
 bot = Bot(token=os.getenv("TOKEN"))
 # ------------------------------------------------ #

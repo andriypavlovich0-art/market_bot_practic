@@ -9,7 +9,7 @@ from aiogram.types import FSInputFile, InputMediaPhoto
 
 from aiogram.fsm.context import FSMContext
 from states import OrderForm
-from database import add_order, get_products, get_orders
+from database import add_order, get_products
 
 router_commands = Router()
 
@@ -29,7 +29,12 @@ def get_goods_page(products, page):
     text = f"{name}:\n Цена: {price}\n Описание: {description}\n\n"
     return text, photo
 
-    
+def get_photo(photo):
+    if photo.startswith("images/"):
+        return FSInputFile(photo)
+    return photo
+# ------------------------------------------------ #
+
 @router_commands.message(Command("start"))
 async def start_command(message: Message):
     await message.answer("Привет! Я бот для просмотра товаров. Используй команду /goods, чтобы увидеть список товаров.")
@@ -40,7 +45,7 @@ async def goods_command(message: Message):
     max_page = len(products)
 
     text, photo = get_goods_page(products, 1)
-    await message.answer_photo(photo=FSInputFile(photo), caption=text, reply_markup=create_goods_keyboard(1, max_page))
+    await message.answer_photo(photo=get_photo(photo), caption=text, reply_markup=create_goods_keyboard(1, max_page))
 
 @router_commands.callback_query(F.data.startswith("page:"))
 async def goods_page_callback(callback: CallbackQuery):
@@ -49,25 +54,14 @@ async def goods_page_callback(callback: CallbackQuery):
     max_page = len(products)
 
     text, photo = get_goods_page(products, page)
-    media = InputMediaPhoto(media=FSInputFile(photo), caption=text)
+    media = InputMediaPhoto(media=get_photo(photo), caption=text)
     await callback.message.edit_media(media=media, reply_markup=create_goods_keyboard(page, max_page))
     await callback.answer()
 
 @router_commands.message(Command("cancel"))
 async def cancel_order(message: Message, state: FSMContext):
     await state.clear()
-    await message.answer("Заказ отменен.")
-
-@router_commands.message(Command("orders"), F.from_user.id == ADMIN_ID)
-async def get_orders_cm(message: Message):
-    orders = await get_orders()
-    if not orders:
-        await message.answer("Заказов пока нет")
-        return 
-    text = "📋 Заказы:\n\n"
-    for order_id, product, name, phone in orders:
-        text += f"#{order_id} {product}\n{name}, {phone}\n\n"
-    await message.answer(text)
+    await message.answer("Действие отменено.")
 
 @router_commands.callback_query(F.data.startswith("order:"))
 async def order_callback(callback: CallbackQuery, state: FSMContext):
