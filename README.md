@@ -49,6 +49,7 @@ Telegram-бот интернет-магазина: каталог товаров
 ├── states.py          # состояния FSM
 ├── database.py        # работа с базой данных
 ├── seed.py            # начальное заполнение каталога
+├── requirements.txt   # зависимости проекта
 ├── images/            # фото стартовых товаров
 └── screenshots/       # скриншоты для README
 ```
@@ -57,7 +58,7 @@ Telegram-бот интернет-магазина: каталог товаров
 
 1. Клонировать репозиторий и установить зависимости:
    ```bash
-   pip install aiogram python-dotenv aiosqlite
+   pip install -r requirements.txt
    ```
 
 2. Создать файл `.env` в корне проекта:
