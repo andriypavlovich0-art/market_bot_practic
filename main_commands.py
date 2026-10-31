@@ -43,6 +43,9 @@ async def start_command(message: Message):
 async def goods_command(message: Message):
     products = await get_products()
     max_page = len(products)
+    if max_page == 0:
+        await message.answer("Каталог пуст")
+        return
 
     text, photo = get_goods_page(products, 1)
     await message.answer_photo(photo=get_photo(photo), caption=text, reply_markup=create_goods_keyboard(1, max_page))
@@ -52,7 +55,13 @@ async def goods_page_callback(callback: CallbackQuery):
     page = int(callback.data.split(":")[-1])
     products = await get_products()
     max_page = len(products)
-
+    if max_page == 0:
+        await callback.message.answer("Каталог пуст")
+        await callback.answer()
+        return
+    if page > max_page:
+        page = max_page
+    
     text, photo = get_goods_page(products, page)
     media = InputMediaPhoto(media=get_photo(photo), caption=text)
     await callback.message.edit_media(media=media, reply_markup=create_goods_keyboard(page, max_page))
@@ -67,6 +76,10 @@ async def cancel_order(message: Message, state: FSMContext):
 async def order_callback(callback: CallbackQuery, state: FSMContext):
     page = int(callback.data.split(":")[-1])
     products = await get_products()
+    if page > len(products):
+        await callback.answer("Этот товар больше недоступен", show_alert=True)
+        return
+    
     name, _, _, _ = products[page - 1]
     await state.update_data(product=name)
     await state.set_state(OrderForm.name)
