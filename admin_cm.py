@@ -84,7 +84,7 @@ async def get_delete_product(message: Message, state: FSMContext):
     product_id = int(message.text)
     deleted = await remove_product(product_id)
     if deleted == 0:
-        await message.answer("Не удалось удалить товар, скорее всего его нет в базе данних")
+        await message.answer("Товара с таким номером нет, попробуйте ещё раз")
         return
     await message.answer("🗑 Товар удалён!")
     await state.clear()

@@ -26,7 +26,7 @@ def is_valid_phone(phone: str):
 
 def get_goods_page(products, page):
     name, price, description, photo = products[page - 1]
-    text = f"{name}:\n Цена: {price}\n Описание: {description}\n\n"
+    text = f"{name}\nЦена: {price}\nОписание: {description}"
     return text, photo
 
 def get_photo(photo):
@@ -100,8 +100,8 @@ async def get_phone(message: Message, state: FSMContext):
     await state.update_data(phone=message.text)
     data = await state.get_data()
     await add_order(data["product"], data["name"], data["phone"])
-    await message.bot.send_message(chat_id=ADMIN_ID, text=f"Новий товар заказан!\nТовар: {data['product']}\n\nИмя заказчика: {data['name']}\nНомер телефона: {data['phone']}")
-    await message.answer(f"Данние о вашем заказе:\nТовар:{data["product"]}\nИмя: {data["name"]}\nТелефон:{data["phone"]}")
+    await message.bot.send_message(chat_id=ADMIN_ID, text=f"🛒 Новый заказ!\nТовар: {data['product']}\n\nИмя заказчика: {data['name']}\nНомер телефона: {data['phone']}")
+    await message.answer(f"✅ Данные о вашем заказе:\nТовар: {data["product"]}\nИмя: {data["name"]}\nТелефон: {data["phone"]}")
     await state.clear()
 
 @router_commands.callback_query(F.data == "ignore")
